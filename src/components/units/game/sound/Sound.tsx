@@ -56,8 +56,8 @@ export default function Sound(props: ISoundProps) {
 
   useEffect(() => {
     if (socket) {
-      if (props.preventEvent) {
-        socket.emit("load_replay");
+      if (props.isReplay) {
+        socket.emit("load_replay", router.query.replayId);
       } else {
         socket.emit("loading");
       }
@@ -110,12 +110,25 @@ export default function Sound(props: ISoundProps) {
             const source = audioCtx.createBufferSource();
             source.buffer = buffer;
             source.connect(gainNode).connect(audioCtx.destination);
-            sources.current[i] = source;
+            sources.current.push(source);
             if (i === 0) {
               gainNode.gain.value = 1;
             }
             return gainNode;
           });
+
+          if (props.isReplay) {
+            const userVocal = await fetch(data.userVocal || "").then((res) =>
+              res.text()
+            );
+            const base64Data = userVocal.split(",")[1];
+            const decodedData = Buffer.from(base64Data, "base64");
+            const buffer = await audioCtx.decodeAudioData(decodedData.buffer);
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            sources.current.push(source);
+          }
 
           // 유저 정보
           props.setPlayersInfo(() => {
@@ -176,14 +189,14 @@ export default function Sound(props: ISoundProps) {
     let keyDown: string;
     switch (userData?.fetchUser.userKeynote) {
       case 1:
-        keyOrigin = gameSong.songMale;
-        keyUp = gameSong.songMaleUp;
-        keyDown = gameSong.songMaleDown;
-        break;
-      case 2:
         keyOrigin = gameSong.songFemale;
         keyUp = gameSong.songFemaleUp;
         keyDown = gameSong.songFemaleDown;
+        break;
+      case 2:
+        keyOrigin = gameSong.songMale;
+        keyUp = gameSong.songMaleUp;
+        keyDown = gameSong.songMaleDown;
         break;
       default:
         keyOrigin =
@@ -207,14 +220,14 @@ export default function Sound(props: ISoundProps) {
     let answerDown: number[];
     switch (userData?.fetchUser.userKeynote) {
       case 1:
-        answerOrigin = gameSong.vocalMale;
-        answerUp = gameSong.vocalMaleUp;
-        answerDown = gameSong.vocalMaleDown;
-        break;
-      case 2:
         answerOrigin = gameSong.vocalFemale;
         answerUp = gameSong.vocalFemaleUp;
         answerDown = gameSong.vocalFemaleDown;
+        break;
+      case 2:
+        answerOrigin = gameSong.vocalMale;
+        answerUp = gameSong.vocalMaleUp;
+        answerDown = gameSong.vocalMaleDown;
         break;
       default:
         answerOrigin =

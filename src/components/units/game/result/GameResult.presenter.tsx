@@ -31,10 +31,10 @@ export default function GameResultUI(props: IGameResultUIProps) {
               <div>
                 <S.Ranking>{i + 1}</S.Ranking>
                 <ProfileCard
-                  character="beluga"
+                  character={el.character}
                   nickname={el.nickname}
                   tier={el.tier}
-                  add={el.isFreind}
+                  add={!el.isFriend}
                 />
               </div>
               <S.Mmr>{el.mmrDiff}</S.Mmr>

@@ -32,7 +32,6 @@ export default function Character() {
     FETCH_USER,
     { variables: { userId }, fetchPolicy: "network-only" }
   );
-
   /* 그래픽 초기화 */
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -40,7 +39,7 @@ export default function Character() {
 
     /* scene */
     scene = new THREE.Scene();
-    scene.background = new THREE.Color("#0D0D2B");
+    scene.background = new THREE.Color("#1a1128");
     scene.fog = new THREE.Fog("#0D0D2B", 5, 25);
     if (!scene) {
       console.error("Scene initialization failed");
@@ -122,7 +121,7 @@ export default function Character() {
       style={{
         top: 0,
         left: 0,
-        position: "fixed",
+        // position: "fixed",
       }}
       ref={canvasRef}
     />

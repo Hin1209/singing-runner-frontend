@@ -3,24 +3,10 @@ import MainUI from "./Main.presenter";
 import { IMainUIProps } from "./Main.types";
 import { useRouter } from "next/router";
 import { SocketContext } from "../../../commons/contexts/SocketContext";
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { userIdState } from "../../../commons/store";
 import { useRecoilState } from "recoil";
-
-const FETCH_USER = gql`
-  query FetchUser($userId: String!) {
-    fetchUser(userId: $userId) {
-      userId
-      userEmail
-      nickname
-      userActive
-      userKeynote
-      userMmr
-      userPoint
-      character
-    }
-  }
-`;
+import { FETCH_USER } from './Main.queries';
 
 const Main = () => {
   // 소켓, 소켓 연결하는 함수 가져오기
@@ -39,19 +25,15 @@ const Main = () => {
   const [showModal, setShowModal] = useState(false);
   const [character, setCharacter] = useState("");
   const [userMmr, setUserMmr] = useState(0);
-  const [nickName, setNickname] = useState("");
+  const [nickname, setNickname] = useState("");
   const [userKeynote, setUserKeynote] = useState("");
   const [userActive, setUserActive] = useState(false);
 
   const [userId] = useRecoilState(userIdState);
 
-  // useEffect(() => {
-  //   setUserId(localStorage.getItem("userId") || "");
-  // }, []);
-
   const { data } = useQuery(FETCH_USER, {
     variables: { userId },
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "network-only",
   });
 
   useEffect(() => {
@@ -125,13 +107,10 @@ const Main = () => {
     setIsClicked(true);
   };
 
-  // 🚨 로그인 기능 추가하기 전에 임시로 사용할 유저 정보
-  // const [dummyUserId, setDummyUserId] = useState("test99");
-  // const [dummyCharacter, setDummyCharacter] = useState("husky");
   const UserMatchDto = {
     userId,
     userMmr,
-    nickName,
+    nickname,
     userActive,
     userKeynote,
     character,
@@ -147,9 +126,25 @@ const Main = () => {
 
   const onClickCustomMode = () => {
     // 소켓 연결
-    socketConnect();
+    const newSocket = socketConnect();
+    console.log("보냄");
+    newSocket.emit("create_custom", {
+      UserMatchDTO: {
+        userId,
+        userMmr,
+        nickname,
+        userActive,
+        userKeynote,
+      },
+    });
+
     // 커스텀 모드 화면으로 전환
     router.push("/custom");
+  };
+
+  const onClickNotification = () => {
+    // 알림 화면으로 전환
+    router.push("/notification");
   };
 
   const handleMatchCancel = () => {
@@ -230,6 +225,7 @@ const Main = () => {
     data,
     character,
     onClickCustomMode,
+    onClickNotification,
   };
 
   return <MainUI {...props} />;

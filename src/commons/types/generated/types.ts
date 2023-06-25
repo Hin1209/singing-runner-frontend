@@ -16,7 +16,7 @@ export type Scalars = {
 };
 
 export type IAddFriendDto = {
-  firendId: Scalars['String']['input'];
+  friendId: Scalars['String']['input'];
   userId: Scalars['String']['input'];
 };
 
@@ -61,6 +61,7 @@ export type IGameSongDto = {
   songFemaleDown: Scalars['String']['output'];
   songFemaleUp: Scalars['String']['output'];
   songGender: Scalars['Boolean']['output'];
+  songId: Scalars['Float']['output'];
   songLyrics: Scalars['String']['output'];
   songMale: Scalars['String']['output'];
   songMaleDown: Scalars['String']['output'];
@@ -199,7 +200,7 @@ export type IQueryFetchUserArgs = {
 
 
 export type IQueryGetNotificationArgs = {
-  page: Scalars['Float']['input'];
+  page: Scalars['Int']['input'];
   userId: Scalars['String']['input'];
 };
 
@@ -213,7 +214,7 @@ export type IQueryGetUserReplaysArgs = {
 
 export type IQuerySearchFriendArgs = {
   nickname: Scalars['String']['input'];
-  page: Scalars['Float']['input'];
+  page: Scalars['Int']['input'];
   userId: Scalars['String']['input'];
 };
 
@@ -227,7 +228,8 @@ export type IQuerySearchSongArgs = {
 
 export type IQuerySearchUserArgs = {
   nickname: Scalars['String']['input'];
-  page: Scalars['Float']['input'];
+  page: Scalars['Int']['input'];
+  userId: Scalars['String']['input'];
 };
 
 export type IReplayIsPublicResponseDto = {

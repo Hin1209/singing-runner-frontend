@@ -17,10 +17,12 @@ export interface ICustomUIProps {
 }
 
 export interface IRoomInfoState {
+  roomId: string;
   mode: string;
   singer: string;
   songTitle: string;
   songId: string;
+  playerCount: number;
 }
 
 export interface IPlayersData {
