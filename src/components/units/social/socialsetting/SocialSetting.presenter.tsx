@@ -7,10 +7,15 @@ import ProfileCard from "../../../commons/profileCard/ProfileCard";
 import { v4 as uuidv4 } from "uuid";
 import * as S from "../Social.styles";
 import Label from "../../../commons/label/Label";
+import Header from '../../../commons/layout/header/Header';
+import Modal from '../../../commons/modal/Modal';
 
 export default function SocialSettingUI(props: ISocialSettingUIProps) {
   return (
     <>
+    <Header
+      text="친구 관리"
+    />
       <S.Container>
         <S.InputWrapper>
           <S.SearchIcon src="/icon/search-purple.png" />
@@ -23,6 +28,7 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
           />
           <Label text="친구 목록" marginTop="16px" />
         </S.InputWrapper>
+        {!props.keyword && !props.data?.searchFriend.length && (<div style={{color: "white", marginBottom: "150px", fontSize: "24px"}}>표시할 친구가 없습니다.</div>)}
         {props.keyword && !props.data?.searchFriend.length && (<div style={{color: "white", marginBottom: "150px", fontSize: "24px"}}>검색 결과가 없습니다.</div>)}
         <S.InfiniteScrollWrapper>
           <InfiniteScroll
@@ -45,7 +51,7 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
                     >
                       <div style={{ width: "1px" }}></div>
                       <Button 
-                      buttonType={buttonType.SHORT_GRAY} 
+                      buttonType={buttonType.SHORT_GRAY}
                       text="삭제"
                       onClick={props.onClickDelete(el.userId)} />
                     </div>
@@ -62,13 +68,21 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
           </InfiniteScroll>
         </S.InfiniteScrollWrapper>
       </S.Container>
-
       <Button
         buttonType={buttonType.EMPTY}
         text="나가기"
         isFixedAtBottom
         onClick={props.onClickExit}
       />
+      {props.isDeleteClicked && (
+        <Modal
+          isCheck={false}
+          firstText="정말로 삭제하시겠습니까?"
+          buttonText='확인'
+          leftButtonText='취소'
+          onClickRight={props.handelDelete}
+          onClickLeft={props.onClickCancel}
+        />)}
     </>
   );
 }
