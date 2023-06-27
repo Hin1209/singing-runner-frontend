@@ -133,6 +133,7 @@ export default function Graphic(props: IGrapicProps) {
     ];
 
     const characters = props.playersInfo.map((player) => player.character);
+    console.log("playersInfo: ", props.playersInfo);
     for (let i = 0; i < props.playersInfo.length; i++) {
       gltfLoader.load(`/game/player/${characters[i]}.glb`, (gltf) => {
         const player = gltf.scene.children[0];
@@ -193,7 +194,16 @@ export default function Graphic(props: IGrapicProps) {
     if (props.isTerminated) moveCameraToPlayer();
   }, [props.isTerminated]);
 
-  const terminateAudio = new Audio("/sound/bgm/terminated.mp3");
+  const terminateAudioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    terminateAudioRef.current = new Audio("/sound/bgm/terminated.mp3");
+    return () => {
+      // 화면 전환 시 게임 종료 bgm 중지
+      terminateAudioRef.current?.pause();
+      if (terminateAudioRef.current) terminateAudioRef.current.currentTime = 0;
+    };
+  }, []);
+
   const moveCameraToPlayer = () => {
     const camera = cameraRef.current;
     if (camera) {
@@ -220,7 +230,7 @@ export default function Graphic(props: IGrapicProps) {
       animate();
     }
 
-    terminateAudio.play();
+    terminateAudioRef.current?.play();
     onBounceAction("mid");
   };
 

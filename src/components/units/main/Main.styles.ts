@@ -1,11 +1,28 @@
 import styled from "@emotion/styled";
+
+export const LogoWrapper = styled.div`
+  position: fixed;
+  top: 8px;
+  left: 16px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+`;
+export const LogoText = styled.div`
+  font-family: PyeongChangPeace-Bold;
+  color: #fff;
+  font-weight: bold;
+  font-size: 20px;
+  text-shadow: #bd00fe 0px 0px 10px;
+`;
+
 export const HeaderWrapper = styled.div`
   position: fixed;
   top: 8px;
   right: 8px;
   img {
-    height: 40px;
-    width: 40px;
+    height: 45px;
+    width: 45px;
     margin: 0 -4px;
   }
 `;

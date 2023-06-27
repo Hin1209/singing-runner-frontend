@@ -25,10 +25,14 @@ export default function MainUI(props: IMainUIProps) {
   const [isNotification] = useRecoilState(isNotificationState);
   return (
     <>
+      <S.LogoWrapper onClick={() => onClickMenu("/main")}>
+        <S.LogoText>Singing Runner</S.LogoText>
+      </S.LogoWrapper>
       <S.HeaderWrapper>
         <img
           src="/icon/header/manual.png"
           onClick={() => onClickMenu("/main/manual")}
+          style={{ width: "40px" }}
         />
         <img
           src="/icon/header/social.png"
@@ -42,6 +46,7 @@ export default function MainUI(props: IMainUIProps) {
         <img
           src="/icon/header/myroom.png"
           onClick={() => onClickMenu("/myroom")}
+          style={{ width: "40px" }}
         />
       </S.HeaderWrapper>
 

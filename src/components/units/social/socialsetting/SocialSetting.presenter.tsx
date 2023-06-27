@@ -7,15 +7,13 @@ import ProfileCard from "../../../commons/profileCard/ProfileCard";
 import { v4 as uuidv4 } from "uuid";
 import * as S from "../Social.styles";
 import Label from "../../../commons/label/Label";
-import Header from '../../../commons/layout/header/Header';
-import Modal from '../../../commons/modal/Modal';
+import Header from "../../../commons/layout/header/Header";
+import Modal from "../../../commons/modal/Modal";
 
 export default function SocialSettingUI(props: ISocialSettingUIProps) {
   return (
     <>
-    <Header
-      text="친구 관리"
-    />
+      <Header text="친구 관리" onClickPrev={props.onClickExit} />
       <S.Container>
         <S.InputWrapper>
           <S.SearchIcon src="/icon/search-purple.png" />
@@ -28,13 +26,46 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
           />
           <Label text="친구 목록" marginTop="16px" />
         </S.InputWrapper>
-        {!props.keyword && !props.data?.searchFriend.length && (<div style={{color: "white", marginBottom: "150px", fontSize: "24px"}}>표시할 친구가 없습니다.</div>)}
-        {props.keyword && !props.data?.searchFriend.length && (<div style={{color: "white", marginBottom: "150px", fontSize: "24px"}}>검색 결과가 없습니다.</div>)}
+        {!props.hasFetched && <></>}
+        {props.hasFetched && (
+          <>
+            {props.loading && <div>loading...</div>}
+            {!props.loading && (
+              <>
+                {!props.keyword &&
+                  !props.data?.searchFriend.length &&
+                  props.isLoadingAfterSearch && (
+                    // 결과 상태 일 때, 친구 없음 메시지 표시
+                    <div
+                      style={{
+                        color: "white",
+                        marginBottom: "150px",
+                        fontSize: "24px",
+                      }}
+                    >
+                      아직 친구가 없습니다.
+                    </div>
+                  )}
+                {props.keyword && !props.data?.searchFriend.length && (
+                  <div
+                    style={{
+                      color: "white",
+                      marginBottom: "150px",
+                      fontSize: "24px",
+                    }}
+                  >
+                    {`${props.keyword}에 해당하는 친구가 없습니다.`}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
         <S.InfiniteScrollWrapper>
           <InfiniteScroll
             pageStart={0}
             loadMore={props.onLoadMore}
-            hasMore={true}
+            hasMore={props.hasMore}
             useWindow={false}
           >
             {props.data?.searchFriend.map((el) => (
@@ -50,10 +81,11 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
                       }}
                     >
                       <div style={{ width: "1px" }}></div>
-                      <Button 
-                      buttonType={buttonType.SHORT_GRAY}
-                      text="삭제"
-                      onClick={props.onClickDelete(el.userId)} />
+                      <Button
+                        buttonType={buttonType.SHORT_GRAY}
+                        text="삭제"
+                        onClick={props.onClickDelete(el.userId)}
+                      />
                     </div>
                   }
                 >
@@ -78,11 +110,12 @@ export default function SocialSettingUI(props: ISocialSettingUIProps) {
         <Modal
           isCheck={false}
           firstText="정말로 삭제하시겠습니까?"
-          buttonText='확인'
-          leftButtonText='취소'
+          buttonText="확인"
+          leftButtonText="취소"
           onClickRight={props.handelDelete}
           onClickLeft={props.onClickCancel}
-        />)}
+        />
+      )}
     </>
   );
 }

@@ -90,14 +90,14 @@ const Main = () => {
     if (socket && isAccepted) {
       // 수락 누른 경우
       console.log("accept true sended to server");
-      socket.emit("accept", true);
+      socket.emit("accept", { accept: true, userId });
       setIsAccepted(false);
       // => 대기 화면으로 이동
     }
     if (socket && isRejected) {
       // 거절 누른 경우
       console.log("accept false sended to server");
-      socket.emit("accept", false);
+      socket.emit("accept", { accept: false, userId });
       setIsRejected(false);
       // => 모드 선택 화면으로 이동
     }
@@ -119,7 +119,7 @@ const Main = () => {
   const handleBattleModeClick = () => {
     setIsBattleClicked(true); // => 배틀 모드 버튼 누른 상태로
     // 소켓 연결
-    const newSocket = socketConnect();
+    const newSocket = socketConnect(userId);
     setIsPolling(false);
     // 소켓 연결 => 유저 정보 보내기
     newSocket.emit("match_making", { UserMatchDto, accept: true });
@@ -127,7 +127,7 @@ const Main = () => {
 
   const onClickCustomMode = () => {
     // 소켓 연결
-    const newSocket = socketConnect();
+    const newSocket = socketConnect(userId);
     setIsPolling(false);
     newSocket.emit("create_custom", {
       userId,

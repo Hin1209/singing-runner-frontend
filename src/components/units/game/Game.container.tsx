@@ -9,6 +9,8 @@ import { IGameProps, IPlayersInfo, ISocketItem } from "./Game.types";
 import { ITEM_DURATION } from "./itemInfo/ItemInfo.styles";
 import { IGameResult } from "./result/GameResult.types";
 import { useMutation, useQuery } from "@apollo/client";
+import { useRouter } from "next/router";
+import Button, { buttonType } from "../../commons/button/Button";
 import {
   IQuery,
   IQueryFetchUserArgs,
@@ -28,12 +30,14 @@ export default function Game(props: IGameProps) {
     { variables: { userId } }
   );
 
+  const router = useRouter();
+
   const [uploadFile] = useMutation(UPLOAD_FILE);
 
   // 소켓 가져오기
   const socketContext = useContext(SocketContext);
   if (!socketContext) return <div>Loading...</div>;
-  const { socket } = socketContext;
+  const { socket, socketDisconnect } = socketContext;
 
   // 로딩 화면을 관리하는 상태
   const [isLoadComplete, setIsLoadComplete] = useState(false);
@@ -42,6 +46,7 @@ export default function Game(props: IGameProps) {
 
   // 게임 종료 여부
   const [isTerminated, setIsTerminated] = useState(false);
+  const [isUserExit, setIsUserExit] = useState(false);
 
   const [songInfo, setSongInfo] = useState({ title: "", singer: "" });
   const [lyrics, setLyrics] = useState<ILyric[]>([]);
@@ -155,9 +160,7 @@ export default function Game(props: IGameProps) {
           userId,
         },
       });
-      result.then(() => {
-        console.log(base64data);
-      });
+      result.then(() => {});
     }
   }, [base64data, isTerminated]);
 
@@ -199,9 +202,9 @@ export default function Game(props: IGameProps) {
 
   /** 데시벨을 측정하는 함수 */
   const checkDecibel = () => {
-    // console.log("decibel", decibel);
     if (props.preventEvent) return;
     if (isMuteActive && decibel !== 0 && decibel > UNMUTE_DECIBEL) {
+      console.log("현재 데시벨: ", decibel, UNMUTE_DECIBEL, "넘어야 함");
       setIsMuteActive(false);
       socket?.emit("escape_item", { item: "mute", userId });
     }
@@ -242,11 +245,37 @@ export default function Game(props: IGameProps) {
         progress={progress}
         setProgress={setProgress}
         setStartTime={setStartTime}
+        isTerminated={isTerminated}
         setIsTerminated={setIsTerminated}
         isReplay={props.isReplay}
         setBase64Data={setBase64Data}
         setLyrics={setLyrics}
+        isUserExit={isUserExit}
       />
+      {props.isReplay ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <Button
+            buttonType={buttonType.GRADATION}
+            text="나가기"
+            isFixedAtBottom
+            onClick={() => {
+              // 🚨 인게임 퇴장 시 이벤트 추가
+              setIsUserExit(true);
+              socketDisconnect();
+              router.back();
+            }}
+          />
+        </div>
+      ) : (
+        <></>
+      )}
     </>
   );
 }

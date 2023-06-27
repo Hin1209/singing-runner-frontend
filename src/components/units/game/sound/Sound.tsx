@@ -41,6 +41,27 @@ export default function Sound(props: ISoundProps) {
   const [originAnswer, setOriginAnswer] = useState<number[]>([]);
   const [keyUpAnswer, setKeyUpAnswer] = useState<number[]>([]);
   const [keyDownAnswer, setKeyDownAnswer] = useState<number[]>([]);
+  const isReplay = props.isReplay as boolean;
+  let replayUserId: string = "";
+
+  if (props.isReplay) {
+    replayUserId = (router.query.userId as string) || "";
+  }
+
+  const { data: replayUserData } = isReplay
+    ? useQuery<Pick<IQuery, "fetchUser">, IQueryFetchUserArgs>(FETCH_USER, {
+        variables: { userId: replayUserId },
+      })
+    : { data: null };
+
+  useEffect(() => {
+    if (props.isUserExit || props.isTerminated) {
+      sources.current.forEach((source) => {
+        source.stop();
+      });
+      audioCtxRef.current?.close();
+    }
+  }, [props.isUserExit, props.isTerminated]);
 
   useEffect(() => {
     // 현재 실행되고 있는 아이템
@@ -59,7 +80,7 @@ export default function Sound(props: ISoundProps) {
       if (props.isReplay) {
         socket.emit("load_replay", router.query.replayId);
       } else {
-        socket.emit("loading");
+        socket.emit("loading", { userId });
       }
       audioCtxRef.current = new window.AudioContext();
       const audioCtx = audioCtxRef.current;
@@ -138,44 +159,73 @@ export default function Sound(props: ISoundProps) {
           }
 
           // 유저 정보
-          props.setPlayersInfo(() => {
-            const newPlayersInfo = [
-              {
-                userId,
-                character: userData?.fetchUser.character || "",
-                activeItem: "",
-                score: 0,
-                position: "mid",
-              },
-            ];
-            data.characterList.forEach((el, i) => {
-              // 현재 유저 제외하고 추가
-              if (el.userId !== userId) {
-                newPlayersInfo.push({
-                  userId: data.characterList[i].userId,
-                  character: data.characterList[i].character,
+          if (props.isReplay) {
+            console.log("replayUserData", replayUserData);
+            props.setPlayersInfo(() => {
+              const newPlayersInfo = [
+                {
+                  userId: replayUserId,
+                  character: replayUserData?.fetchUser.character || "",
                   activeItem: "",
                   score: 0,
-                  position: newPlayersInfo.length < 2 ? "right" : "left",
-                });
-              } else {
-                newPlayersInfo[0].character = data.characterList[i].character;
-              }
+                  position: "mid",
+                },
+              ];
+              data.characterList.forEach((el, i) => {
+                // 현재 유저 제외하고 추가
+                if (el.userId !== replayUserId) {
+                  newPlayersInfo.push({
+                    userId: data.characterList[i].userId,
+                    character: data.characterList[i].character,
+                    activeItem: "",
+                    score: 0,
+                    position: newPlayersInfo.length < 2 ? "right" : "left",
+                  });
+                } else {
+                  newPlayersInfo[0].character = data.characterList[i].character;
+                }
+              });
+              return newPlayersInfo;
             });
-            return newPlayersInfo;
-          });
+          } else {
+            props.setPlayersInfo(() => {
+              const newPlayersInfo = [
+                {
+                  userId,
+                  character: userData?.fetchUser.character || "",
+                  activeItem: "",
+                  score: 0,
+                  position: "mid",
+                },
+              ];
+              data.characterList.forEach((el, i) => {
+                // 현재 유저 제외하고 추가
+                if (el.userId !== userId) {
+                  newPlayersInfo.push({
+                    userId: data.characterList[i].userId,
+                    character: data.characterList[i].character,
+                    activeItem: "",
+                    score: 0,
+                    position: newPlayersInfo.length < 2 ? "right" : "left",
+                  });
+                } else {
+                  newPlayersInfo[0].character = data.characterList[i].character;
+                }
+              });
+              return newPlayersInfo;
+            });
+          }
 
           // 곡 정보
           props.setSongInfo({
             title: data.gameSong.songTitle,
             singer: data.gameSong.singer,
           });
-
           // 로딩 완료 신호 보내기
           if (props.isReplay) {
             socket.emit("start_replay", router.query.replayId, userId);
           } else {
-            socket?.emit("game_ready");
+            socket?.emit("game_ready", { userId });
           }
         } catch (err) {
           console.log(err);
