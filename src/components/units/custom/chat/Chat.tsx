@@ -13,7 +13,8 @@ const VoiceChat = (props: { roomId: string }) => {
     const loadAgora = async () => {
       const { initAgora } = await import("./initAgora"); // dynamic import
 
-      const APP_ID = process.env.NEXT_PUBLIC_APPKEY || "";
+      const APP_ID =
+        process.env.NEXT_PUBLIC_APPKEY || "a1a098b9de2e4ad48afd7a5298c70402";
 
       const { client, microphoneTrack } = await initAgora(
         APP_ID,

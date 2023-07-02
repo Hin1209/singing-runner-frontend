@@ -30,9 +30,6 @@ export default function Replay() {
     Pick<IQuery, "fetchUser">,
     IQueryFetchUserArgs
   >(FETCH_USER, {
-    variables: {
-      userId: router.query.userId as string,
-    },
     fetchPolicy: "network-only",
   });
 

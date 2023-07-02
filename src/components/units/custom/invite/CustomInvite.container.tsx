@@ -30,7 +30,7 @@ export default function CustomInvite() {
   const { data: userData } = useQuery<
     Pick<IQuery, "fetchUser">,
     IQueryFetchUserArgs
-  >(FETCH_USER, { variables: { userId } });
+  >(FETCH_USER);
 
   const { loading, data, refetch, fetchMore } = useQuery<
     Pick<IQuery, "searchFriend">,

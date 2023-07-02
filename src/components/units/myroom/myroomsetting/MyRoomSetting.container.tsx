@@ -17,9 +17,7 @@ const keynoteDisplayNames = ["원키", "여키", "남키"];
 
 export default function MyRoomSetting() {
   const [userId, setUserId] = useRecoilState(userIdState);
-  const { data, refetch } = useQuery(FETCH_USER, {
-    variables: { userId },
-  });
+  const { data, refetch } = useQuery(FETCH_USER);
   const router = useRouter();
   const [logoutUser] = useMutation(LOGOUT_USER);
   const [isLogoutClicked, setIsLogoutClicked] = useState(false);

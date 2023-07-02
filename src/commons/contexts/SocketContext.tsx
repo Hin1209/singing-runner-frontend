@@ -20,12 +20,12 @@ export const SocketProvider = ({ children }: SocketProviderProps) => {
 
   const socketConnect = (userId: string) => {
     /* 🚨 배포 시 사용 */
-    const newSocket = io("https://injungle.shop", {
-      path: "/api/socket.io",
-      query: { userId },
-    });
+    // const newSocket = io("https://injungle.shop", {
+    //   path: "/api/socket.io",
+    //   query: { userId },
+    // });
     /* 로컬 테스트 시 사용 */
-    // const newSocket = io("http://localhost:3000", { query: { userId } });
+    const newSocket = io("http://localhost:3000", { query: { userId } });
     setSocket(newSocket);
     console.log("⭐️ 소켓 연결");
     return newSocket;

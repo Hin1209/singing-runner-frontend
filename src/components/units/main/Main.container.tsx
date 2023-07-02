@@ -41,7 +41,6 @@ const Main = () => {
   const [userId] = useRecoilState(userIdState);
 
   const { data } = useQuery(FETCH_USER, {
-    variables: { userId },
     fetchPolicy: "network-only",
   });
 

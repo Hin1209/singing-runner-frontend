@@ -9,7 +9,7 @@ import {
   IMutation,
   IMutationLoginUserArgs,
 } from "../../../commons/types/generated/types";
-import { LOGIN_USER } from './Login.queries';
+import { LOGIN_USER } from "./Login.queries";
 
 export default function Login() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function Login() {
       // 1. 로그인 뮤테이션으로 accessToken 받아오기
       const result = await loginUser({
         variables: {
-          userLoginDto: {
+          userAuthDto: {
             userEmail: email,
             password,
           },
@@ -88,7 +88,6 @@ export default function Login() {
   }, []);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-
     if (event.key === "Enter") {
       if (isLoginButtonEnabled) {
         audioRef.current?.play();
@@ -146,7 +145,7 @@ export default function Login() {
     dummyClick,
     onClickLogin,
     isLoginButtonEnabled,
-    onKeyDown
+    onKeyDown,
   };
 
   return <LoginUI {...props} />;

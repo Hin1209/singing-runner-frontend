@@ -23,7 +23,7 @@ export default function Sound(props: ISoundProps) {
   const { data: userData } = useQuery<
     Pick<IQuery, "fetchUser">,
     IQueryFetchUserArgs
-  >(FETCH_USER, { variables: { userId } });
+  >(FETCH_USER);
 
   const router = useRouter();
 
@@ -45,9 +45,7 @@ export default function Sound(props: ISoundProps) {
   }
 
   const { data: replayUserData } = isReplay
-    ? useQuery<Pick<IQuery, "fetchUser">, IQueryFetchUserArgs>(FETCH_USER, {
-        variables: { userId: replayUserId },
-      })
+    ? useQuery<Pick<IQuery, "fetchUser">, IQueryFetchUserArgs>(FETCH_USER)
     : { data: null };
 
   useEffect(() => {

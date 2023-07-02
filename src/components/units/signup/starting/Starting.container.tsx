@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 import { userIdState } from "../../../../commons/store";
 import StartingUI from "./Starting.presenter";
-import { FETCH_USER, UPDATE_CHARACTER } from './Starting.queries';
+import { FETCH_USER, UPDATE_CHARACTER } from "./Starting.queries";
 import { IStartingUIProps } from "./Starting.types";
 
 const characters = [
@@ -23,9 +23,7 @@ export default function Starting() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [updateCharacterMutation] = useMutation(UPDATE_CHARACTER);
   const [userId] = useRecoilState(userIdState);
-  const { data } = useQuery(FETCH_USER, {
-    variables: { userId },
-  });
+  const { data } = useQuery(FETCH_USER);
 
   const router = useRouter();
 

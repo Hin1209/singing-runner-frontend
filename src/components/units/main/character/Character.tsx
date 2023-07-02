@@ -1,5 +1,3 @@
-import { useRecoilState } from "recoil";
-import { userIdState } from "../../../../commons/store";
 import { useEffect, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import {
@@ -24,13 +22,12 @@ export default function Character() {
   let scene: THREE.Scene;
   let camera: THREE.PerspectiveCamera;
 
-  const [userId] = useRecoilState(userIdState);
   // useEffect(() => {
   //   setUserId(localStorage.getItem("userId") || "");
   // }, []);
   const { data } = useQuery<Pick<IQuery, "fetchUser">, IQueryFetchUserArgs>(
     FETCH_USER,
-    { variables: { userId }, fetchPolicy: "network-only" }
+    { fetchPolicy: "network-only" }
   );
   /* 그래픽 초기화 */
   useEffect(() => {
