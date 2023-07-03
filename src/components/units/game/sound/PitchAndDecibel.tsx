@@ -1,9 +1,18 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { SocketContext } from "../../../../commons/contexts/SocketContext";
 import { IPitchAndDecibelProps, ISocketScore } from "./PitchAndDecibel.types";
+import * as PitchFinder from "pitchfinder";
 
 import { useRecoilState } from "recoil";
 import { userIdState } from "../../../../commons/store";
+
+const pitchDetector = PitchFinder.AMDF({
+  sampleRate: 44100,
+  minFrequency: 82,
+  maxFrequency: 1000,
+  sensitivity: 0.5,
+  ratio: 5,
+});
 
 const pitchToMIDINoteValue = (pitch: number): number => {
   const A4MIDINoteValue = 69; // MIDI note value for A4 (440 Hz)
@@ -41,6 +50,8 @@ const getScoreFromDiff = (answerNote: number, userNote: number): number => {
   if (diff >= 14 && diff < 20) return 55;
   else return 50;
 };
+
+let calculateNumber = 0;
 
 export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
   // 소켓 가져오기
@@ -172,6 +183,7 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
   const handleAudioStream = (stream: MediaStream) => {
     const mediaRecorder = new MediaRecorder(stream);
     const chunks: Blob[] = [];
+    const timeList: number[] = [];
     let isGameTerminated = false;
 
     audioContext = new window.AudioContext();
@@ -179,7 +191,6 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
     analyzer = audioContext.createAnalyser();
     analyzer.fftSize = 2048;
     mediaStreamSource.connect(analyzer);
-    const pitchWorker = new Worker("/game/sound/calculatePitchWorker.js");
     const nowTime = performance.now();
     props.setStartTime(nowTime);
     const sources = propsRef.current.sources;
@@ -192,9 +203,15 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
     mediaRecorder.onstop = (e) => {
       const blob = new Blob(chunks, { type: "audio/ogg" });
       const reader = new FileReader();
-      pitchWorker.terminate();
       reader.readAsDataURL(blob);
       isGameTerminated = true;
+      const totalTime = timeList.reduce((acc, cur) => acc + cur, 0);
+      console.log(
+        "avg time at processing audio: ",
+        totalTime / timeList.length,
+        "ms"
+      );
+      console.log("number of calculate: ", calculateNumber);
       reader.onloadend = () => {
         props.setBase64Data(reader.result as string);
         socket?.emit("game_terminated", {
@@ -208,35 +225,6 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
     propsRef.current.sources.current[0].onended = () => {
       mediaRecorder.stop();
     };
-
-    pitchWorker.addEventListener("message", (event) => {
-      const pitch: number = event.data.pitch;
-      if (pitch != null && pitch > 0) {
-        avgPitch += pitchToMIDINoteValue(pitch);
-        pitchSamples++;
-      }
-      const currentTime = event.data.time;
-      if (startTime === 0 && currentTime != null) {
-        startTime = currentTime;
-      }
-      if (currentTime != null) {
-        const elapsedTime = currentTime - startTime;
-        if (elapsedTime > avgPitchWindowSize) {
-          if (pitchSamples <= 0) {
-            pitchAveragesRef.current.push(0);
-            calculateScore(0, currentIdx);
-          } else {
-            const averagePitch = avgPitch / pitchSamples;
-            const avgMIDINoteValue = Math.round(averagePitch);
-            pitchAveragesRef.current.push(avgMIDINoteValue);
-            calculateScore(avgMIDINoteValue, currentIdx);
-          }
-          avgPitch = 0;
-          pitchSamples = 0;
-          startTime = currentTime;
-        }
-      }
-    });
 
     const bufferLength = analyzer.frequencyBinCount;
     const dataArray = new Float32Array(bufferLength);
@@ -263,6 +251,7 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
           analyzer?.getFloatTimeDomainData(dataArray);
           analyzer?.getByteFrequencyData(frequencyArray);
           let sum = 0;
+          const mainTime = performance.now();
           for (let i = 0; i < frequencyArray.length; i++) {
             sum += frequencyArray[i];
           }
@@ -271,18 +260,48 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
             const decibel = calculateDecibel(avg);
             propsRef.current.setDecibel(decibel);
           }
-          pitchWorker.postMessage({
-            array: dataArray,
-            time: performance.now(),
-          });
+          const pitch = pitchDetector(dataArray);
+          if (pitch != null && pitch > 0) {
+            avgPitch += pitchToMIDINoteValue(pitch);
+            pitchSamples++;
+          }
+          const currentTime = performance.now();
+          if (startTime === 0 && currentTime != null) {
+            startTime = currentTime;
+          }
+          if (currentTime != null) {
+            const elapsedTime = currentTime - startTime;
+            if (elapsedTime > avgPitchWindowSize) {
+              if (pitchSamples <= 0) {
+                pitchAveragesRef.current.push(0);
+                calculateScore(0, currentIdx);
+              } else {
+                const averagePitch = avgPitch / pitchSamples;
+                const avgMIDINoteValue = Math.round(averagePitch);
+                pitchAveragesRef.current.push(avgMIDINoteValue);
+                calculateScore(avgMIDINoteValue, currentIdx);
+              }
+              avgPitch = 0;
+              pitchSamples = 0;
+              startTime = currentTime;
+            }
+          }
           then = timestamp - (elapsed % fpsInterval);
+          const mainTime2 = performance.now();
+          console.log(
+            "calculate time in main thread: ",
+            mainTime2 - mainTime,
+            "ms"
+          );
+          timeList.push(mainTime2 - mainTime);
+          calculateNumber++;
         }
         requestAnimationFrame(cb);
       };
       return cb;
     };
 
-    processAudio(processAudioCb(15));
+    processAudio(processAudioCb(30));
   };
 
   return null;
