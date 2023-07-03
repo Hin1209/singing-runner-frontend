@@ -42,6 +42,8 @@ const getScoreFromDiff = (answerNote: number, userNote: number): number => {
   else return 50;
 };
 
+let calculateNumber = 0;
+
 export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
   // 소켓 가져오기
   const socketContext = useContext(SocketContext);
@@ -181,6 +183,7 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
     mediaStreamSource.connect(analyzer);
     const pitchWorker = new Worker("/game/sound/calculatePitchWorker.js");
     const nowTime = performance.now();
+    const timeList: number[] = [];
     props.setStartTime(nowTime);
     const sources = propsRef.current.sources;
     sources.current.forEach((source) => {
@@ -193,6 +196,13 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
       const blob = new Blob(chunks, { type: "audio/ogg" });
       const reader = new FileReader();
       pitchWorker.terminate();
+      const totalTime = timeList.reduce((acc, cur) => acc + cur, 0);
+      console.log(
+        "avg time at audio processing: ",
+        totalTime / timeList.length,
+        "ms"
+      );
+      console.log("number of calculate: ", calculateNumber);
       reader.readAsDataURL(blob);
       isGameTerminated = true;
       reader.onloadend = () => {
@@ -211,6 +221,9 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
 
     pitchWorker.addEventListener("message", (event) => {
       const pitch: number = event.data.pitch;
+      calculateNumber++;
+      timeList.push(event.data.calculateTime);
+      console.log("calculate time: ", event.data.calculateTime, "ms");
       if (pitch != null && pitch > 0) {
         avgPitch += pitchToMIDINoteValue(pitch);
         pitchSamples++;
@@ -282,7 +295,7 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
       return cb;
     };
 
-    processAudio(processAudioCb(15));
+    processAudio(processAudioCb(60));
   };
 
   return null;
