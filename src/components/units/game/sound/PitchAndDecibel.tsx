@@ -301,7 +301,7 @@ export default function PitchAndDecibel(props: IPitchAndDecibelProps) {
       return cb;
     };
 
-    processAudio(processAudioCb(30));
+    processAudio(processAudioCb(60));
   };
 
   return null;
