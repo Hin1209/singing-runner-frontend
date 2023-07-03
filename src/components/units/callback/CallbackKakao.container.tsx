@@ -3,7 +3,11 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { accessTokenState, kakaoUserResponseState, userIdState } from "../../../commons/store";
+import {
+  accessTokenState,
+  kakaoUserResponseState,
+  userIdState,
+} from "../../../commons/store";
 
 const LOGIN_WITH_KAKAO = gql`
   mutation LoginWithKakao($kakaoUserResponse: KakaoUserResponseDto!) {
@@ -21,9 +25,7 @@ export default function CallbackKakao() {
   const [loginWithKakao] = useMutation(LOGIN_WITH_KAKAO);
   const [, setAccessToken] = useRecoilState(accessTokenState);
   const [, setUserId] = useRecoilState(userIdState);
-  const [, setKakaoUserResponse] = useRecoilState(
-    kakaoUserResponseState
-  );
+  const [, setKakaoUserResponse] = useRecoilState(kakaoUserResponseState);
 
   useEffect(() => {
     const handleKakaoLogin = async () => {
@@ -39,8 +41,8 @@ export default function CallbackKakao() {
           params: {
             grant_type: "authorization_code",
             client_id: kakaoApiKey,
-            redirect_uri: "https://injungle.shop/callback/kakao", // 배포용
-            // redirect_uri: "http://localhost:3001/callback/kakao", // 로컬용
+            // redirect_uri: "https://injungle.shop/callback/kakao", // 배포용
+            redirect_uri: "http://localhost:3001/callback/kakao", // 로컬용
             code,
           },
         }
@@ -78,7 +80,7 @@ export default function CallbackKakao() {
         setAccessToken(accessToken); // Recoil에 엑세스 토큰 저장
         setUserId(userId); // Recoil에 userId 저장
 
-        router.push("/main")
+        router.push("/main");
       } catch (error) {
         console.error("로그인 예외:", error); // 에러 로그 출력
         // 로그인 실패한 경우 - 새로운 회원으로 판단
